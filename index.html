@@ -695,10 +695,10 @@
     </section>
 
     <p class="inline-note">
-  If your main question is specifically about paternity testing, visit
-  <a href="https://paternity.bio/" rel="noopener">Paternity.bio</a> for a focused overview
-  of paternity DNA test options.
-</p>
+      If your main question is specifically about paternity testing, visit
+      <a href="https://paternity.bio/" rel="noopener">Paternity.bio</a> for a focused overview
+      of paternity DNA test options.
+    </p>
 
   </main>
 
@@ -712,7 +712,7 @@
     <!-- Local / on-site policies -->
     <span>
       <a href="/privacy.html">On-site Privacy &amp; Cookies</a> ·
-      <a href="#" id="privacySettingsLink">Privacy settings</a> ·
+      <a href="#" onclick="window.__openPrivacySettings(); return false;">Privacy settings</a> ·
       <a href="/about.html">About DNAKit.bio</a> ·
       <a href="https://genectics.com/?ref=dnakit.bio-footer" target="_blank" rel="noopener">
         Genectics.com – DNA kit comparison
@@ -749,38 +749,12 @@
   document.getElementById('year').textContent = new Date().getFullYear();
 
   (function () {
-    const GA_ID = "G-T0F37B5CP8";
-    const KEY = "ronarn_consent_analytics";
-
-    const overlay = document.getElementById("consentOverlay");
-    const acceptBtn = document.getElementById("consentAccept");
-    const rejectBtn = document.getElementById("consentReject");
-    const policyBtn = document.getElementById("consentOpenPolicy");
-    const settingsLink = document.getElementById("privacySettingsLink");
-
-    function lockPage() {
-      document.documentElement.classList.add("consent-locked");
-      document.body.classList.add("consent-locked");
-      overlay.classList.add("is-visible");
-    }
-
-    function unlockPage() {
-      overlay.classList.remove("is-visible");
-      document.documentElement.classList.remove("consent-locked");
-      document.body.classList.remove("consent-locked");
-    }
-
-    function setChoice(value) {
-      try { localStorage.setItem(KEY, value); } catch (e) {}
-    }
-
-    function getChoice() {
-      try { return localStorage.getItem(KEY); } catch (e) { return null; }
-    }
+    const GA_ID = "G-3GVJ73QQ5J"; // NEW: Same GA4 as Genectics.com
+    const KEY = "ronarn_consent_analytics_v1"; // NEW: Same consent key as Genectics.com
 
     function loadGA4() {
-      if (window.__ga4_loaded) return;
-      window.__ga4_loaded = true;
+      if (window.__gaLoaded) return;
+      window.__gaLoaded = true;
 
       const s = document.createElement("script");
       s.async = true;
@@ -792,9 +766,42 @@
       window.gtag = gtag;
 
       gtag("js", new Date());
-      gtag("config", GA_ID, {
-        anonymize_ip: true
-      });
+      gtag("config", GA_ID, { anonymize_ip: true });
+    }
+
+    function setChoice(value) {
+      try { localStorage.setItem(KEY, value); } catch (e) {}
+    }
+
+    function getChoice() {
+      try { return localStorage.getItem(KEY); } catch (e) { return null; }
+    }
+
+    function clearChoice() {
+      try { localStorage.removeItem(KEY); } catch (e) {}
+    }
+
+    // Expose footer helper like Genectics.com
+    window.__openPrivacySettings = function () {
+      clearChoice();
+      window.location.reload();
+    };
+
+    const overlay = document.getElementById("consentOverlay");
+    const acceptBtn = document.getElementById("consentAccept");
+    const rejectBtn = document.getElementById("consentReject");
+    const policyBtn = document.getElementById("consentOpenPolicy");
+
+    function lockPage() {
+      document.documentElement.classList.add("consent-locked");
+      document.body.classList.add("consent-locked");
+      overlay.classList.add("is-visible");
+    }
+
+    function unlockPage() {
+      overlay.classList.remove("is-visible");
+      document.documentElement.classList.remove("consent-locked");
+      document.body.classList.remove("consent-locked");
     }
 
     acceptBtn.addEventListener("click", function () {
@@ -812,18 +819,12 @@
       window.location.href = "/privacy.html";
     });
 
-    if (settingsLink) {
-      settingsLink.addEventListener("click", function (e) {
-        e.preventDefault();
-        lockPage();
-      });
-    }
-
     const choice = getChoice();
     if (choice === "accepted") {
       loadGA4();
+      unlockPage();
     } else if (choice === "rejected") {
-      // No GA4
+      unlockPage();
     } else {
       lockPage(); // Hard mode: force a choice
     }
